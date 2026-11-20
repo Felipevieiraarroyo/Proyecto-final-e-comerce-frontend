@@ -15,6 +15,9 @@ export type UpdateCategoryData = Partial<CreateCategoryData>;
 
 export async function getCategories(): Promise<Category[]> {
   const response = await api.get<Category[]>("/categories");
+
+  console.log("CATEGORIAS RECEBIDAS PELO FRONTEND:", response.data);
+
   return response.data;
 }
 

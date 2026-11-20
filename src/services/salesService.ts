@@ -1,6 +1,6 @@
 import api from "./api";
 
-export type PaymentMethod = "DINHEIRO" | "TARJETA" | "PIX" | "QR";
+export type PaymentMethod = "DINERO" | "TARJETA" | "PIX" | "QR";
 
 export interface CreateSaleItem {
   productId: number;

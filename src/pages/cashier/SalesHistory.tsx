@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   History,
   ChevronDown,
@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 
 import { getSales, type Sale } from "../../services/salesService";
+import Pagination from "../../components/ui/Pagination";
 
 const formatarMoeda = (valor: number | string) =>
   Number(valor).toLocaleString("pt-BR", {
@@ -20,7 +21,7 @@ const formatarData = (data: string) => new Date(data).toLocaleString("pt-BR");
 
 const obterMetodoPagamento = (metodo: string) => {
   const metodos: Record<string, string> = {
-    DINHEIRO: "Dinheiro",
+    DINERO: "Dinheiro",
     TARJETA: "Cartão",
     PIX: "PIX",
     QR: "QR Code",
@@ -45,6 +46,8 @@ export default function SalesHistory() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [vendaExpandida, setVendaExpandida] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   async function carregarVendas() {
     setCarregando(true);
@@ -59,6 +62,11 @@ export default function SalesHistory() {
       setCarregando(false);
     }
   }
+  const vendasPaginadas = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+
+    return vendas.slice(startIndex, startIndex + pageSize);
+  }, [vendas, currentPage]);
 
   useEffect(() => {
     carregarVendas();
@@ -152,7 +160,7 @@ export default function SalesHistory() {
             {vendas.length === 1 ? "venda registrada" : "vendas registradas"}
           </p>
 
-          {vendas.map((venda) => {
+          {vendasPaginadas.map((venda) => {
             const expandida = vendaExpandida === venda.id;
 
             return (
@@ -311,6 +319,15 @@ export default function SalesHistory() {
               </div>
             );
           })}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={vendas.length}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              setVendaExpandida(null);
+            }}
+          />
         </div>
       )}
     </section>

@@ -16,6 +16,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "../../services/productService";
+import Pagination from "../../components/ui/Pagination";
 
 import { getCategories, type Category } from "../../services/categoryService";
 
@@ -52,6 +53,8 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,6 +65,9 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState<ProductForm>(initialForm);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
   async function loadData() {
     try {
       setLoading(true);
@@ -96,6 +102,12 @@ export default function AdminProducts() {
         product.category?.name.toLowerCase().includes(term),
     );
   }, [products, search]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+
+    return filteredProducts.slice(startIndex, startIndex + pageSize);
+  }, [filteredProducts, currentPage]);
 
   const formatCurrency = (value: number | string) =>
     new Intl.NumberFormat("pt-BR", {
@@ -300,7 +312,7 @@ export default function AdminProducts() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-190 text-left text-sm">
               <thead>
                 <tr
                   className="border-b text-xs uppercase tracking-wide"
@@ -319,7 +331,7 @@ export default function AdminProducts() {
               </thead>
 
               <tbody>
-                {filteredProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <tr
                     key={product.id}
                     className="border-b last:border-0"
@@ -392,7 +404,12 @@ export default function AdminProducts() {
             </table>
           </div>
         )}
-
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredProducts.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+        />
         <p
           className="mt-4 text-xs"
           style={{ color: "var(--color-text-muted)" }}
@@ -402,7 +419,7 @@ export default function AdminProducts() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center overflow-y-auto bg-black/60 p-4">
           <div
             className="my-auto w-full max-w-xl rounded-2xl border p-6 shadow-2xl"
             style={{

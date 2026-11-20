@@ -14,6 +14,7 @@ import {
 import { getProducts } from "../../services/productService";
 import { createSale, type PaymentMethod } from "../../services/salesService";
 import type { Product } from "../../types/product";
+import Pagination from "../../components/ui/Pagination";
 
 interface CashierSalesProps {
   cashRegisterId: number;
@@ -51,6 +52,8 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [busca, setBusca] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
 
   const [carregando, setCarregando] = useState(true);
@@ -87,6 +90,15 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
       return correspondeBusca && possuiEstoque;
     });
   }, [products, busca]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [busca]);
+
+  const produtosPaginados = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+
+    return produtosFiltrados.slice(startIndex, startIndex + pageSize);
+  }, [produtosFiltrados, currentPage]);
 
   const total = useMemo(
     () =>
@@ -249,7 +261,6 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
               style={{ color: "var(--color-text)" }}
             />
           </div>
-
           {carregando ? (
             <div
               className="flex items-center justify-center gap-3 p-12"
@@ -278,7 +289,7 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {produtosFiltrados.map((product) => {
+              {produtosPaginados.map((product) => {
                 const estoque = product.inventory?.quantity ?? 0;
 
                 return (
@@ -341,6 +352,14 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
                 );
               })}
             </div>
+          )}{" "}
+          {!carregando && produtosFiltrados.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={produtosFiltrados.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
           )}
         </div>
 
@@ -469,7 +488,7 @@ export default function CashierSales({ cashRegisterId }: CashierSalesProps) {
                 borderColor: "var(--color-border)",
               }}
             >
-              <option value="DINHEIRO">Dinheiro</option>
+              <option value="DINERO">Dinheiro</option>
               <option value="TARJETA">Cartão</option>
               <option value="PIX">PIX</option>
               <option value="QR">QR Code</option>

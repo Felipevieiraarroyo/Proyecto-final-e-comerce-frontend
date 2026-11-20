@@ -14,9 +14,12 @@ import {
 
 import { getSales } from "../../services/salesService";
 import type { Sale } from "../../services/salesService";
+import Pagination from "../../components/ui/Pagination";
 
 export default function AdminSales() {
   const [sales, setSales] = useState<Sale[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
   const [search, setSearch] = useState("");
   const [expandedSales, setExpandedSales] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +73,15 @@ export default function AdminSales() {
       );
     });
   }, [sales, search]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const paginatedSales = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+
+    return filteredSales.slice(startIndex, startIndex + pageSize);
+  }, [filteredSales, currentPage]);
 
   const totalRevenue = useMemo(
     () => filteredSales.reduce((total, sale) => total + Number(sale.total), 0),
@@ -90,7 +102,7 @@ export default function AdminSales() {
 
   const paymentLabel = (method: string) => {
     const labels: Record<string, string> = {
-      DINHEIRO: "Dinheiro",
+      DINERO: "Dinheiro",
       TARJETA: "Cartão",
       PIX: "PIX",
       QR: "QR Code",
@@ -261,7 +273,7 @@ export default function AdminSales() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
+            <table className="w-full min-w-175 text-left text-sm">
               <thead
                 style={{
                   backgroundColor: "var(--color-surface-muted)",
@@ -279,7 +291,7 @@ export default function AdminSales() {
               </thead>
 
               <tbody>
-                {filteredSales.map((sale) => {
+                {paginatedSales.map((sale) => {
                   const expanded = expandedSales.includes(sale.id);
                   const payment = sale.payments?.[0];
 
@@ -429,6 +441,14 @@ export default function AdminSales() {
             </table>
           </div>
         )}
+        <div className="px-5 pb-5">
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredSales.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </section>
     </div>
   );
