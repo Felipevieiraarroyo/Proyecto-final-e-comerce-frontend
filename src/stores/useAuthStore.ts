@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import api from "../services/api";
-import type { LoginRequest, LoginResponse, Usuario } from "../types/auth";
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  Usuario,
+} from "../types/auth";
 
 interface AuthState {
   token: string | null;
@@ -11,6 +17,7 @@ interface AuthState {
   authChecking: boolean;
 
   login: (dados: LoginRequest) => Promise<void>;
+  register: (dados: RegisterRequest) => Promise<void>;
   carregarUsuario: () => Promise<void>;
   logout: () => void;
 }
@@ -42,6 +49,37 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       set({
         error: "Não foi possível realizar o login.",
+        isAuthenticated: false,
+      });
+
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  register: async (dados) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await api.post<RegisterResponse>(
+        "/auth/register",
+        dados,
+      );
+
+      const { access_token, user } = response.data;
+
+      localStorage.setItem("token", access_token);
+
+      set({
+        token: access_token,
+        user,
+        isAuthenticated: true,
+        error: null,
+      });
+    } catch (error) {
+      set({
+        error: "Não foi possível realizar o registro.",
         isAuthenticated: false,
       });
 

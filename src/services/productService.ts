@@ -7,6 +7,7 @@ export interface CreateProductData {
   description?: string;
   acquisitionPrice: number;
   salePrice: number;
+  initialQuantity?: number;
 }
 
 export type UpdateProductData = Partial<CreateProductData>;

@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   AlertTriangle,
   DollarSign,
+  ClipboardList,
 } from "lucide-react";
 
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -25,6 +26,7 @@ import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import AdminInventory from "./AdminInventory";
 import AdminSales from "./AdminSales";
+import AdminOrders from "./AdminOrders";
 
 import type { Product } from "../../types/product";
 import type { Category } from "../../services/categoryService";
@@ -36,7 +38,8 @@ type AdminSection =
   | "products"
   | "categories"
   | "inventory"
-  | "sales";
+  | "sales"
+  | "orders";
 
 const navigation = [
   { id: "dashboard", label: "Visão geral", icon: LayoutDashboard },
@@ -44,6 +47,7 @@ const navigation = [
   { id: "categories", label: "Categorias", icon: Tags },
   { id: "inventory", label: "Estoque", icon: Warehouse },
   { id: "sales", label: "Vendas", icon: Receipt },
+  { id: "orders", label: "Pedidos", icon: ClipboardList },
 ] as const;
 
 export default function AdminDashboard() {
@@ -478,6 +482,8 @@ export default function AdminDashboard() {
             {activeSection === "inventory" && <AdminInventory />}
 
             {activeSection === "sales" && <AdminSales />}
+
+            {activeSection === "orders" && <AdminOrders />}
 
             {activeSection !== "dashboard" &&
               activeSection !== "products" &&

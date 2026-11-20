@@ -17,6 +17,7 @@ import {
   deleteCategory,
   type Category,
 } from "../../services/categoryService";
+import Pagination from "../../components/ui/Pagination";
 
 const initialForm = {
   name: "",
@@ -45,6 +46,8 @@ function getErrorMessage(error: unknown): string {
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,6 +76,10 @@ export default function AdminCategories() {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const filteredCategories = useMemo(() => {
     const term = search.trim().toLowerCase();
 
@@ -84,6 +91,12 @@ export default function AdminCategories() {
         (category.description ?? "").toLowerCase().includes(term),
     );
   }, [categories, search]);
+
+  const paginatedCategories = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+
+    return filteredCategories.slice(startIndex, startIndex + pageSize);
+  }, [filteredCategories, currentPage]);
 
   function openCreateModal() {
     setEditingCategory(null);
@@ -263,7 +276,7 @@ export default function AdminCategories() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm">
+            <table className="w-full min-w-190 text-left text-sm">
               <thead>
                 <tr
                   className="border-b text-xs uppercase tracking-wide"
@@ -279,7 +292,7 @@ export default function AdminCategories() {
               </thead>
 
               <tbody>
-                {filteredCategories.map((category) => (
+                {paginatedCategories.map((category) => (
                   <tr
                     key={category.id}
                     className="border-b last:border-0"
@@ -327,7 +340,12 @@ export default function AdminCategories() {
             </table>
           </div>
         )}
-
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredCategories.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+        />
         <p
           className="mt-4 text-xs"
           style={{ color: "var(--color-text-muted)" }}
@@ -337,7 +355,7 @@ export default function AdminCategories() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center overflow-y-auto bg-black/60 p-4">
           <div
             className="my-auto w-full max-w-xl rounded-2xl border p-6 shadow-2xl"
             style={{
